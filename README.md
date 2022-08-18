@@ -1,2 +1,2 @@
-# openshift-omnisci
-OmniSci on OpenShift
+# openshift-heavyai
+Heavy.AI on OpenShift
