@@ -2,9 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: heavyai-pv-claim
-#  annotations:
-#    volume.beta.kubernetes.io/storage-class: local-ssd
+  name: heavyai-data
   labels:
     app: heavyai
 spec:
@@ -13,5 +11,17 @@ spec:
   resources:
     requests:
       storage: 100Gi
-#  volumeName: "local-pv-e34c5b90"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: heavydb
+  labels:
+    app: heavyai
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
 
