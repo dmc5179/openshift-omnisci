@@ -22,14 +22,12 @@ metadata:
   name: heavyai
 spec:
   port:
-    targetPort: http
-#  tls:
-#    insecureEdgeTerminationPolicy: Redirect
-#    termination: reencrypt
+    targetPort: heavyai
   to:
     kind: Service
     name: heavyai
     weight: 100
+  wildcardPolicy: None
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
@@ -50,13 +48,6 @@ spec:
     spec:
       nodeSelector:
         feature.node.kubernetes.io/pci-10de.present: 'true'
-#      affinity:
-#        nodeAffinity:
-#          requiredDuringSchedulingIgnoredDuringExecution:
-#            nodeSelectorTerms:
-#            - matchExpressions:
-#              - key: openshift.com/gpu-accelerator
-#                operator: Exists
       containers:
       - image: docker.io/heavyai/heavyai-ee-cuda:latest
         imagePullPolicy: Always
@@ -73,9 +64,23 @@ spec:
         limits:
           nvidia.com/gpu: 1 # requesting 1 GPU
         volumeMounts:
-        - name: heavyai-persistent-storage
-          mountPath: /heavyai-storage
+          - name: storage
+            mountPath: /heavyai-storage
+            subPath: heavyai-storage
+          - name: heavyai
+            mountPath: /var/lib/heavyai
+          - name: config
+            mountPath: /var/lib/heavyai/heavy.conf
+            subPath: heavy.conf
       volumes:
-      - name: heavyai-persistent-storage
+      - name: storage
         persistentVolumeClaim:
-          claimName: heavyai-pv-claim
+          claimName: heavyai-data
+      - name: heavyai
+        persistentVolumeClaim:
+          claimName: heavydb
+      - name: config
+        configMap:
+          name: heavy-config
+          defaultMode: 420
+

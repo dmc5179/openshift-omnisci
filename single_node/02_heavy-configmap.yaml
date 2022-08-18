@@ -4,14 +4,15 @@ metadata:
   creationTimestamp: null
   name: heavy-config
 data:
-  heavy.conf: |
+  heavy.conf: |-
     port = 6274
     http-port = 6278
     calcite-port = 6279
-    data = "/heavyai-storage/data"
+    data = "/var/lib/heavyai/storage"
+    allowed-import-paths = ["/heavyai-storage", "/var/lib/heavyai/storage"]
     read-only = false
-    verbose = false
-    
+    num-gpus = 1
+
     [web]
     port = 6273
     frontend = "frontend"
