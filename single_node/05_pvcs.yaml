@@ -2,16 +2,16 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: mapd-pv-claim
-  annotations:
-    volume.beta.kubernetes.io/storage-class: local-ssd
+  name: heavyai-pv-claim
+#  annotations:
+#    volume.beta.kubernetes.io/storage-class: local-ssd
   labels:
-    app: mapd
+    app: heavyai
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 495Gi
-  volumeName: "local-pv-e34c5b90"
+      storage: 100Gi
+#  volumeName: "local-pv-e34c5b90"
 

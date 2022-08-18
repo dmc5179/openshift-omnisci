@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: heavy-config
+data:
+  heavy.conf: |
+    port = 6274
+    http-port = 6278
+    calcite-port = 6279
+    data = "/heavyai-storage/data"
+    read-only = false
+    verbose = false
+    
+    [web]
+    port = 6273
+    frontend = "frontend"
