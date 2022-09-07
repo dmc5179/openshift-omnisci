@@ -45,6 +45,13 @@ spec:
             - name: immerse
               containerPort: 6273
               protocol: TCP
+          readinessProbe:
+            tcpSocket:
+              port: 6273
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
           volumeMounts:
             - name: storage
               mountPath: /heavyai-storage
@@ -59,7 +66,6 @@ spec:
               subPath: servers.json
           image: >-
             docker.io/heavyai/heavyai-ee-cuda:latest
-
 ---
 apiVersion: v1
 kind: Service
