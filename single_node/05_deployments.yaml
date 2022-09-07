@@ -16,6 +16,8 @@ spec:
       labels:
         app: heavyai-agg
     spec:
+      serviceAccount: heavyai
+      serviceAccountName: heavyai
       volumes:
         - name: storage
           persistentVolumeClaim:
