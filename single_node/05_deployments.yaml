@@ -1,86 +1,102 @@
+﻿kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: heavyai-agg
+  namespace: heavyai-dev
+  labels:
+    app: heavyai-agg
+    app.kubernetes.io/part-of: heavyai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: heavyai-agg
+  template:
+    metadata:
+      labels:
+        app: heavyai-agg
+    spec:
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: mlops-efs-pvc
+        - name: heavyai
+          persistentVolumeClaim:
+            claimName: heavyai-db
+        - name: config
+          configMap:
+            name: heavyai
+            defaultMode: 420
+      containers:
+        - resources:
+            limits:
+              nvidia.com/gpu: '1'
+          name: heavyai-agg
+          env:
+            - name: NVIDIA_DRIVER_CAPABILITIES
+              value: 'compute,utility,graphics'
+            - name: NVIDIA_VISIBLE_DEVICES
+              value: all
+#            - name: VK_ICD_FILENAMES
+#              value: /etc/vulkan/icd.d/nvidia*
+          ports:
+            - name: immerse
+              containerPort: 6273
+              protocol: TCP
+          volumeMounts:
+            - name: storage
+              mountPath: /heavyai-storage
+              subPath: heavyai-storage
+            - name: heavyai
+              mountPath: /var/lib/heavyai
+            - name: config
+              mountPath: /var/lib/heavyai/heavy.conf
+              subPath: heavy.conf
+            - name: config
+              mountPath: /var/lib/heavyai/servers.json
+              subPath: servers.json
+          image: >-
+            docker.io/heavyai/heavyai-ee-cuda:latest
+
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: heavyai
   labels:
-    app: heavyai
+    app: heavyai-agg
+  name: immerse
+  namespace: heavyai-dev
 spec:
-  ports:
-    - port: 6273
-      name: heavyai
-      protocol: TCP
-      targetPort: 6273
-  selector:
-    app: heavyai
   clusterIP: None
+  clusterIPs:
+  - None
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - name: immerse
+    port: 6273
+    protocol: TCP
+    targetPort: 6273
+  selector:
+    app: heavyai-agg
+  sessionAffinity: None
+  type: ClusterIP
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   labels:
-    app: heavyai
-  name: heavyai
+    app: heavyai-agg
+  name: immerse
+  namespace: heavyai-dev
 spec:
+  host: heavyai.apps.ocp4.danclark.io
   port:
-    targetPort: heavyai
+    targetPort: immerse
   to:
     kind: Service
-    name: heavyai
+    name: immerse
     weight: 100
   wildcardPolicy: None
----
-apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
-kind: Deployment
-metadata:
-  name: heavyai
-  labels:
-    app: heavyai
-spec:
-  selector:
-    matchLabels:
-      app: heavyai
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: heavyai
-    spec:
-      nodeSelector:
-        feature.node.kubernetes.io/pci-10de.present: 'true'
-      containers:
-      - image: docker.io/heavyai/heavyai-ee-cuda:latest
-        imagePullPolicy: Always
-        name: heavyai-ee-cuda-latest
-        env:
-        - name: NVIDIA_DRIVER_CAPABILITIES
-          value: compute,utility,graphics
-        - name: NVIDIA_VISIBLE_DEVICES
-          value: all
-        ports:
-        - containerPort: 6273
-          name: heavyai
-        resources:
-        limits:
-          nvidia.com/gpu: 1 # requesting 1 GPU
-        volumeMounts:
-          - name: storage
-            mountPath: /heavyai-storage
-            subPath: heavyai-storage
-          - name: heavyai
-            mountPath: /var/lib/heavyai
-          - name: config
-            mountPath: /var/lib/heavyai/heavy.conf
-            subPath: heavy.conf
-      volumes:
-      - name: storage
-        persistentVolumeClaim:
-          claimName: heavyai-data
-      - name: heavyai
-        persistentVolumeClaim:
-          claimName: heavydb
-      - name: config
-        configMap:
-          name: heavy-config
-          defaultMode: 420
-

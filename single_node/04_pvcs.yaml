@@ -2,9 +2,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: heavyai-data
+  name: mlops-efs-pvc
+  namespace: heavyai-dev
   labels:
-    app: heavyai
+    app: heavyai-agg
 spec:
   accessModes:
     - ReadWriteOnce
@@ -15,9 +16,10 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: heavydb
+  name: heavyai-db
+  namespace: heavyai-dev
   labels:
-    app: heavyai
+    app: heavyai-agg
 spec:
   accessModes:
     - ReadWriteOnce
